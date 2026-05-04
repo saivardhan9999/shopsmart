@@ -1,17 +1,19 @@
 # ShopSmart
 
-ShopSmart is a Python + HTML/CSS shopping list and price tracker inspired by dense ecommerce storefront layouts, adapted into a grocery and household savings dashboard.
+ShopSmart is a Python + HTML/CSS product-link price comparison app inspired by dense ecommerce storefront layouts.
 
 ## Features
 
 - Flask backend with server-rendered HTML templates
 - Demo login and registration
 - Per-user JSON data store
-- Search and category filtering
-- Wishlist and cart quantity controls
-- Add custom tracked products
-- Savings, wishlist, cart, and total dashboard stats
-- Ecommerce-style product cards, sale badges, quick actions, and animated hero panels
+- Paste a product URL and scan across major ecommerce stores
+- Product title detection from the pasted link when the page is accessible
+- Ranked offer cards with lowest price highlighted
+- Smart cart for cheapest offers
+- External buy/search links for each store
+- Comparison history per user
+- Ecommerce-style cards, sale badges, quick actions, and animated hero panels
 
 ## Tech Stack
 

@@ -63,6 +63,9 @@ button {
 .stats-row article,
 .add-panel,
 .product-card,
+.offer-card,
+.comparison-head,
+.cart-section,
 .empty-state {
   background: rgba(255, 253, 246, 0.88);
   border: 1px solid var(--line);
@@ -240,7 +243,11 @@ input:focus {
 .ghost-button,
 .search-form button,
 .header-actions button,
-.product-actions button {
+.product-actions button,
+.product-actions a,
+.comparison-head button,
+.cart-list button,
+.cart-list a {
   align-items: center;
   border: 1px solid var(--ink);
   display: inline-flex;
@@ -264,16 +271,25 @@ input:focus {
 
 .ghost-button,
 .header-actions button,
-.product-actions button {
+.product-actions button,
+.product-actions a,
+.comparison-head button,
+.cart-list button,
+.cart-list a {
   background: var(--cream);
   color: var(--ink);
+  text-decoration: none;
 }
 
 .primary-button:hover,
 .ghost-button:hover,
 .search-form button:hover,
 .header-actions button:hover,
-.product-actions button:hover {
+.product-actions button:hover,
+.product-actions a:hover,
+.comparison-head button:hover,
+.cart-list button:hover,
+.cart-list a:hover {
   transform: translateY(-2px);
 }
 
@@ -443,7 +459,107 @@ input:focus {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
-.product-card {
+.comparison-zone {
+  min-width: 0;
+}
+
+.comparison-head {
+  align-items: end;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  padding: 1rem;
+}
+
+.comparison-head p {
+  color: var(--green);
+  font-size: 0.82rem;
+  font-weight: 950;
+  margin: 0 0 0.5rem;
+  text-transform: uppercase;
+}
+
+.comparison-head h2 {
+  font-size: clamp(2rem, 4vw, 4.5rem);
+  letter-spacing: -0.05em;
+  line-height: 0.9;
+  margin: 0;
+}
+
+.comparison-head > strong {
+  color: var(--green);
+  font-size: clamp(2.5rem, 5vw, 5.5rem);
+  line-height: 0.9;
+}
+
+.scan-note {
+  border-top: 1px solid var(--line);
+  margin-top: 1rem;
+  padding-top: 1rem;
+}
+
+.scan-note p,
+.muted {
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.history-list {
+  border-top: 1px solid var(--line);
+  display: grid;
+  gap: 0.65rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+}
+
+.history-list h3 {
+  font-size: 1.4rem;
+  letter-spacing: -0.04em;
+  margin: 0 0 0.25rem;
+}
+
+.history-list a {
+  border: 1px solid var(--line);
+  color: var(--ink);
+  display: grid;
+  padding: 0.8rem;
+  text-decoration: none;
+  transition:
+    background 0.25s var(--ease),
+    color 0.25s var(--ease),
+    transform 0.25s var(--ease);
+}
+
+.history-list a.active,
+.history-list a:hover {
+  background: var(--ink);
+  color: var(--cream);
+  transform: translateX(4px);
+}
+
+.history-list span {
+  font-weight: 950;
+}
+
+.history-list small {
+  color: var(--muted);
+  margin-top: 0.35rem;
+}
+
+.history-list a.active small,
+.history-list a:hover small {
+  color: rgba(255, 253, 246, 0.62);
+}
+
+.offer-board {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.product-card,
+.offer-card {
   animation: riseIn 0.55s var(--ease) both;
   min-height: 430px;
   overflow: hidden;
@@ -451,7 +567,8 @@ input:focus {
   position: relative;
 }
 
-.product-card::after {
+.product-card::after,
+.offer-card::after {
   background: radial-gradient(circle, rgba(216, 255, 79, 0.65), transparent 64%);
   content: "";
   height: 220px;
@@ -459,6 +576,15 @@ input:focus {
   right: -90px;
   top: -90px;
   width: 220px;
+}
+
+.offer-card.best-offer {
+  background: var(--ink);
+  color: var(--cream);
+}
+
+.offer-card.best-offer::after {
+  background: radial-gradient(circle, rgba(24, 179, 107, 0.8), transparent 64%);
 }
 
 .badge {
@@ -486,6 +612,27 @@ input:focus {
   z-index: 1;
 }
 
+.store-mark {
+  align-items: center;
+  background: linear-gradient(135deg, var(--lime), #fff);
+  border: 1px solid var(--line);
+  display: grid;
+  font-size: 4rem;
+  font-weight: 1000;
+  height: 180px;
+  letter-spacing: -0.08em;
+  margin: 1rem 0;
+  place-items: center;
+  position: relative;
+  text-transform: uppercase;
+  z-index: 1;
+}
+
+.best-offer .store-mark {
+  background: var(--lime);
+  color: var(--ink);
+}
+
 .product-meta {
   position: relative;
   z-index: 1;
@@ -508,6 +655,11 @@ input:focus {
 .product-meta p {
   color: var(--muted);
   margin: 0;
+}
+
+.best-offer .product-meta p,
+.best-offer .price-row span {
+  color: rgba(255, 253, 246, 0.64);
 }
 
 .price-row {
@@ -549,12 +701,47 @@ input:focus {
   color: var(--cream);
 }
 
+.best-offer .product-actions a,
+.best-offer .product-actions button {
+  background: var(--lime);
+  color: var(--ink);
+}
+
 .product-actions > span {
   font-weight: 950;
 }
 
 .empty-state {
   padding: 2rem;
+}
+
+.cart-section {
+  margin-top: 1rem;
+  padding: 1rem;
+}
+
+.cart-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.cart-list article {
+  align-items: center;
+  border: 1px solid var(--line);
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 1fr auto auto;
+  padding: 0.8rem;
+}
+
+.cart-list strong,
+.cart-list span {
+  display: block;
+}
+
+.cart-list span {
+  color: var(--muted);
+  margin-top: 0.25rem;
 }
 
 .deal-marquee {
@@ -616,6 +803,7 @@ input:focus {
   }
 
   .product-board,
+  .offer-board,
   .stats-row {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -653,7 +841,14 @@ input:focus {
   .search-form,
   .stats-row,
   .product-board,
+  .offer-board,
+  .cart-list article,
   .split {
     grid-template-columns: 1fr;
+  }
+
+  .comparison-head {
+    align-items: stretch;
+    flex-direction: column;
   }
 }

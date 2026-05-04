@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}ShopSmart Dashboard{% endblock %}
+{% block title %}ShopSmart Compare{% endblock %}
 
 {% block body %}
   <main class="shop-shell">
@@ -9,14 +9,13 @@
         <span>Shop</span>
         <span>Smart</span>
       </div>
-      <form class="search-form" method="get">
-        <input name="q" placeholder="Search products, stores, brands..." value="{{ query }}">
-        <input name="category" type="hidden" value="{{ active_category }}">
-        <button type="submit">Search</button>
+      <form class="search-form url-form" action="{{ url_for('compare') }}" method="post">
+        <input name="product_url" placeholder="Paste any product link here..." required>
+        <button type="submit">Compare</button>
       </form>
       <div class="header-actions">
-        <span>Wishlist {{ wishlist_count }}</span>
-        <span>Cart {{ cart_count }}</span>
+        <span>{{ store_count }} stores</span>
+        <span>Cart {{ cart|length }}</span>
         <form action="{{ url_for('logout') }}" method="post">
           <button type="submit">Logout</button>
         </form>
@@ -24,108 +23,147 @@
     </header>
 
     <nav class="mega-menu">
-      {% for category in categories %}
-        <a class="{{ 'active' if category == active_category else '' }}" href="{{ url_for('dashboard', category=category, q=query) }}">
-          {{ category }}
-        </a>
-      {% endfor %}
+      <a class="active" href="#compare">Paste link</a>
+      <a href="#offers">Best offers</a>
+      <a href="#cart">Smart cart</a>
+      <a href="#history">History</a>
     </nav>
 
-    <section class="shop-hero">
+    <section class="shop-hero" id="compare">
       <div>
         <p>Welcome back, {{ user.name }}</p>
-        <h1>Compare, watch, and buy smarter.</h1>
-        <span>ShopSmart turns your grocery list into a living price tracker with wishlists, targets, and cart math.</span>
+        <h1>Paste a product link. Find the lowest price.</h1>
+        <span>ShopSmart scans the product against major ecommerce stores, ranks prices, and sends the cheapest offer into your smart cart.</span>
       </div>
       <article class="cart-tile">
-        <small>Cart estimate</small>
-        <strong>₹{{ cart_total }}</strong>
-        <span>Target savings ₹{{ target_savings }}</span>
+        <small>Best seen price</small>
+        <strong>Rs {{ best_price or 0 }}</strong>
+        <span>Total possible saving Rs {{ total_savings }}</span>
       </article>
     </section>
 
     <section class="stats-row">
       <article>
-        <span>Wishlist</span>
-        <strong>{{ wishlist_count }}</strong>
+        <span>Compared links</span>
+        <strong>{{ comparisons|length }}</strong>
       </article>
       <article>
-        <span>Cart items</span>
-        <strong>{{ cart_count }}</strong>
+        <span>Stores scanned</span>
+        <strong>{{ store_count }}</strong>
       </article>
       <article>
-        <span>Tracked saving</span>
-        <strong>₹{{ target_savings }}</strong>
+        <span>Smart cart</span>
+        <strong>{{ cart|length }}</strong>
       </article>
       <article>
-        <span>Categories</span>
-        <strong>{{ categories|length - 1 }}</strong>
+        <span>Cart total</span>
+        <strong>Rs {{ cart_total }}</strong>
       </article>
     </section>
 
     <section class="content-grid">
       <aside class="add-panel">
-        <p>Quick add</p>
-        <h2>Track a product</h2>
-        <form action="{{ url_for('add_item') }}" method="post">
-          <input name="name" placeholder="Product name" required>
-          <input name="brand" placeholder="Brand" required>
-          <input name="category" placeholder="Category" required>
-          <input name="store" placeholder="Store" required>
-          <div class="split">
-            <input name="price" min="0" placeholder="Price" required type="number">
-            <input name="target" min="0" placeholder="Target" required type="number">
-          </div>
-          <input name="emoji" maxlength="4" placeholder="Emoji e.g. 🛒">
-          <button class="primary-button" type="submit">Add tracker</button>
+        <p>Link scanner</p>
+        <h2>Compare product</h2>
+        <form action="{{ url_for('compare') }}" method="post">
+          <input name="product_url" placeholder="https://store.com/product..." required>
+          <button class="primary-button" type="submit">Scan stores</button>
         </form>
+
+        <div class="scan-note">
+          <strong>How it works</strong>
+          <p>Paste a product URL. ShopSmart reads the product name, creates ecommerce search offers, ranks prices, and highlights the least expensive store.</p>
+        </div>
+
+        <section class="history-list" id="history">
+          <h3>Recent scans</h3>
+          {% for comparison in comparisons %}
+            <a class="{{ 'active' if active_comparison and comparison.id == active_comparison.id else '' }}" href="{{ url_for('dashboard', comparison=comparison.id) }}">
+              <span>{{ comparison.name }}</span>
+              <small>{{ comparison.offers[0].store }} / Rs {{ comparison.offers[0].price }}</small>
+            </a>
+          {% else %}
+            <p class="muted">No scans yet.</p>
+          {% endfor %}
+        </section>
       </aside>
 
-      <section class="product-board">
-        {% for item in items %}
-          <article class="product-card reveal">
-            <div class="badge">{{ item.badge }}</div>
-            <div class="product-visual">{{ item.emoji }}</div>
-            <div class="product-meta">
-              <span>{{ item.brand }} / {{ item.store }}</span>
-              <h3>{{ item.name }}</h3>
-              <p>{{ item.category }}</p>
+      <section class="comparison-zone" id="offers">
+        {% if active_comparison %}
+          <div class="comparison-head">
+            <div>
+              <p>Compared from {{ active_comparison.source }}</p>
+              <h2>{{ active_comparison.name }}</h2>
             </div>
-            <div class="price-row">
-              <strong>₹{{ item.price }}</strong>
-              <span>target ₹{{ item.target }}</span>
-            </div>
-            <div class="product-actions">
-              <form action="{{ url_for('item_action', item_id=item.id, action='minus') }}" method="post">
-                <button type="submit">−</button>
-              </form>
-              <span>{{ item.cart }}</span>
-              <form action="{{ url_for('item_action', item_id=item.id, action='plus') }}" method="post">
-                <button type="submit">+</button>
-              </form>
-              <form action="{{ url_for('item_action', item_id=item.id, action='wishlist') }}" method="post">
-                <button class="{{ 'liked' if item.wishlist else '' }}" type="submit">♡</button>
-              </form>
-              <form action="{{ url_for('item_action', item_id=item.id, action='delete') }}" method="post">
-                <button type="submit">×</button>
-              </form>
-            </div>
-          </article>
+            <form action="{{ url_for('delete_comparison', comparison_id=active_comparison.id) }}" method="post">
+              <button type="submit">Remove scan</button>
+            </form>
+          </div>
+
+          <section class="offer-board">
+            {% for offer in active_comparison.offers %}
+              <article class="offer-card reveal {{ 'best-offer' if offer.best else '' }}">
+                <div class="badge">{{ "Lowest price" if offer.best else offer.badge }}</div>
+                <div class="store-mark">{{ offer.store[:2] }}</div>
+                <div class="product-meta">
+                  <span>#{{ offer.rank }} / {{ offer.domain }}</span>
+                  <h3>{{ offer.store }}</h3>
+                  <p>Delivery {{ offer.delivery }} / Rating {{ offer.rating }}</p>
+                </div>
+                <div class="price-row">
+                  <strong>Rs {{ offer.price }}</strong>
+                  <span>save Rs {{ offer.saving }}</span>
+                </div>
+                <div class="product-actions">
+                  <form action="{{ url_for('add_to_cart', comparison_id=active_comparison.id, offer_id=offer.id) }}" method="post">
+                    <button type="submit">Add to cart</button>
+                  </form>
+                  <a href="{{ offer.link }}" rel="noreferrer" target="_blank">Buy</a>
+                </div>
+              </article>
+            {% endfor %}
+          </section>
         {% else %}
           <div class="empty-state">
-            <h2>No products found</h2>
-            <p>Try another search or add a custom tracker.</p>
+            <h2>Paste your first product link</h2>
+            <p>ShopSmart will compare it across stores and rank the cheapest offers here.</p>
           </div>
-        {% endfor %}
+        {% endif %}
       </section>
+    </section>
+
+    <section class="cart-section" id="cart">
+      <div class="comparison-head">
+        <div>
+          <p>Smart cart</p>
+          <h2>Ready-to-buy cheapest picks</h2>
+        </div>
+        <strong>Rs {{ cart_total }}</strong>
+      </div>
+      <div class="cart-list">
+        {% for item in cart %}
+          <article>
+            <div>
+              <strong>{{ item.product }}</strong>
+              <span>{{ item.store }} / Rs {{ item.price }}</span>
+            </div>
+            <a href="{{ item.link }}" rel="noreferrer" target="_blank">Buy</a>
+            <form action="{{ url_for('remove_from_cart', item_id=item.id) }}" method="post">
+              <button type="submit">Remove</button>
+            </form>
+          </article>
+        {% else %}
+          <p class="muted">Your smart cart is empty.</p>
+        {% endfor %}
+      </div>
     </section>
 
     <footer class="deal-marquee">
       <div>
-        <span>Wishlist smarter</span>
-        <span>Compare faster</span>
-        <span>Pay less</span>
-        <span>Track every cart</span>
+        <span>Paste link</span>
+        <span>Compare stores</span>
+        <span>Pick cheapest</span>
+        <span>Buy smarter</span>
       </div>
     </footer>
   </main>
