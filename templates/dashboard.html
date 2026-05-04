@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block title %}ShopSmart Dashboard{% endblock %}
+
+{% block body %}
+  <main class="shop-shell">
+    <header class="shop-header">
+      <div class="brand">
+        <span>Shop</span>
+        <span>Smart</span>
+      </div>
+      <form class="search-form" method="get">
+        <input name="q" placeholder="Search products, stores, brands..." value="{{ query }}">
+        <input name="category" type="hidden" value="{{ active_category }}">
+        <button type="submit">Search</button>
+      </form>
+      <div class="header-actions">
+        <span>Wishlist {{ wishlist_count }}</span>
+        <span>Cart {{ cart_count }}</span>
+        <form action="{{ url_for('logout') }}" method="post">
+          <button type="submit">Logout</button>
+        </form>
+      </div>
+    </header>
+
+    <nav class="mega-menu">
+      {% for category in categories %}
+        <a class="{{ 'active' if category == active_category else '' }}" href="{{ url_for('dashboard', category=category, q=query) }}">
+          {{ category }}
+        </a>
+      {% endfor %}
+    </nav>
+
+    <section class="shop-hero">
+      <div>
+        <p>Welcome back, {{ user.name }}</p>
+        <h1>Compare, watch, and buy smarter.</h1>
+        <span>ShopSmart turns your grocery list into a living price tracker with wishlists, targets, and cart math.</span>
+      </div>
+      <article class="cart-tile">
+        <small>Cart estimate</small>
+        <strong>₹{{ cart_total }}</strong>
+        <span>Target savings ₹{{ target_savings }}</span>
+      </article>
+    </section>
+
+    <section class="stats-row">
+      <article>
+        <span>Wishlist</span>
+        <strong>{{ wishlist_count }}</strong>
+      </article>
+      <article>
+        <span>Cart items</span>
+        <strong>{{ cart_count }}</strong>
+      </article>
+      <article>
+        <span>Tracked saving</span>
+        <strong>₹{{ target_savings }}</strong>
+      </article>
+      <article>
+        <span>Categories</span>
+        <strong>{{ categories|length - 1 }}</strong>
+      </article>
+    </section>
+
+    <section class="content-grid">
+      <aside class="add-panel">
+        <p>Quick add</p>
+        <h2>Track a product</h2>
+        <form action="{{ url_for('add_item') }}" method="post">
+          <input name="name" placeholder="Product name" required>
+          <input name="brand" placeholder="Brand" required>
+          <input name="category" placeholder="Category" required>
+          <input name="store" placeholder="Store" required>
+          <div class="split">
+            <input name="price" min="0" placeholder="Price" required type="number">
+            <input name="target" min="0" placeholder="Target" required type="number">
+          </div>
+          <input name="emoji" maxlength="4" placeholder="Emoji e.g. 🛒">
+          <button class="primary-button" type="submit">Add tracker</button>
+        </form>
+      </aside>
+
+      <section class="product-board">
+        {% for item in items %}
+          <article class="product-card reveal">
+            <div class="badge">{{ item.badge }}</div>
+            <div class="product-visual">{{ item.emoji }}</div>
+            <div class="product-meta">
+              <span>{{ item.brand }} / {{ item.store }}</span>
+              <h3>{{ item.name }}</h3>
+              <p>{{ item.category }}</p>
+            </div>
+            <div class="price-row">
+              <strong>₹{{ item.price }}</strong>
+              <span>target ₹{{ item.target }}</span>
+            </div>
+            <div class="product-actions">
+              <form action="{{ url_for('item_action', item_id=item.id, action='minus') }}" method="post">
+                <button type="submit">−</button>
+              </form>
+              <span>{{ item.cart }}</span>
+              <form action="{{ url_for('item_action', item_id=item.id, action='plus') }}" method="post">
+                <button type="submit">+</button>
+              </form>
+              <form action="{{ url_for('item_action', item_id=item.id, action='wishlist') }}" method="post">
+                <button class="{{ 'liked' if item.wishlist else '' }}" type="submit">♡</button>
+              </form>
+              <form action="{{ url_for('item_action', item_id=item.id, action='delete') }}" method="post">
+                <button type="submit">×</button>
+              </form>
+            </div>
+          </article>
+        {% else %}
+          <div class="empty-state">
+            <h2>No products found</h2>
+            <p>Try another search or add a custom tracker.</p>
+          </div>
+        {% endfor %}
+      </section>
+    </section>
+
+    <footer class="deal-marquee">
+      <div>
+        <span>Wishlist smarter</span>
+        <span>Compare faster</span>
+        <span>Pay less</span>
+        <span>Track every cart</span>
+      </div>
+    </footer>
+  </main>
+{% endblock %}

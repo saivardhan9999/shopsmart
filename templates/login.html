@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}ShopSmart Access{% endblock %}
+
+{% block body %}
+  <main class="auth-shell">
+    <section class="storefront-hero">
+      <div class="topline">
+        <span>ShopSmart</span>
+        <span>Wishlist 0</span>
+        <span>Cart 0</span>
+      </div>
+      <nav class="category-ribbon">
+        <span>Pantry</span>
+        <span>Dairy</span>
+        <span>Produce</span>
+        <span>Snacks</span>
+        <span>Home</span>
+        <span>Deals</span>
+      </nav>
+      <div class="hero-copy">
+        <p>price tracking marketplace</p>
+        <h1>Track every rupee before checkout.</h1>
+        <span>Build smarter lists, watch price drops, and catch your best deals in one dashboard.</span>
+      </div>
+      <div class="feature-slider">
+        <article>
+          <b>Fresh deals</b>
+          <strong>₹1,420</strong>
+          <small>tracked savings</small>
+        </article>
+        <article>
+          <b>Wishlist</b>
+          <strong>08</strong>
+          <small>watched items</small>
+        </article>
+        <article>
+          <b>Cart pulse</b>
+          <strong>12</strong>
+          <small>planned buys</small>
+        </article>
+      </div>
+    </section>
+
+    <section class="auth-card">
+      <p>account</p>
+      <h2>{{ "Create account" if mode == "register" else "Login" }}</h2>
+      <form method="post">
+        <input type="hidden" name="mode" value="{{ mode }}">
+        {% if mode == "register" %}
+          <label>
+            Name
+            <input name="name" placeholder="Your name" type="text">
+          </label>
+        {% endif %}
+        <label>
+          Email
+          <input name="email" placeholder="you@example.com" type="email">
+        </label>
+        <label>
+          Password
+          <input name="password" placeholder="Demo password" type="password">
+        </label>
+        {% if message %}
+          <p class="auth-message">{{ message }}</p>
+        {% endif %}
+        <button class="primary-button" type="submit">
+          {{ "Create account" if mode == "register" else "Enter shop" }}
+          <span>→</span>
+        </button>
+      </form>
+      <form method="post" class="mode-switch">
+        <input type="hidden" name="mode" value="{{ 'login' if mode == 'register' else 'register' }}">
+        <button class="ghost-button" type="submit">
+          {{ "I already have an account" if mode == "register" else "Need an account?" }}
+        </button>
+      </form>
+    </section>
+  </main>
+{% endblock %}
